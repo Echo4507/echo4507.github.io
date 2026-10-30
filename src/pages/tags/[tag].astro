@@ -1,0 +1,27 @@
+---
+import Base from '../../layouts/Base.astro';
+import TagFilter from '../../components/TagFilter.astro';
+import NotesByYear from '../../components/NotesByYear.astro';
+import { getNotes, getTags } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const notes = await getNotes();
+  return (await getTags()).map(([tag]) => ({
+    params: { tag },
+    props: { tag, notes: notes.filter((n) => n.data.tags.includes(tag)) },
+  }));
+}
+
+const { tag, notes } = Astro.props;
+---
+
+<Base title={`#${tag}`} description={`標籤「${tag}」的所有筆記。`}>
+  <div class="container">
+    <header class="page-head">
+      <p class="eyebrow">// tag · {notes.length} 篇</p>
+      <h1>#{tag}</h1>
+    </header>
+    <TagFilter current={tag} />
+    <NotesByYear notes={notes} />
+  </div>
+</Base>

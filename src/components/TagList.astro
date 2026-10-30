@@ -1,0 +1,27 @@
+---
+// 一排標籤，每個都連到該標籤的筆記列表
+interface Props {
+  tags: string[];
+  current?: string;
+}
+
+const { tags, current } = Astro.props;
+---
+
+{
+  tags.length > 0 && (
+    <ul class="tags">
+      {tags.map((tag) => (
+        <li>
+          <a
+            class="tag"
+            href={`/tags/${encodeURIComponent(tag)}/`}
+            aria-current={tag === current ? 'page' : undefined}
+          >
+            #{tag}
+          </a>
+        </li>
+      ))}
+    </ul>
+  )
+}

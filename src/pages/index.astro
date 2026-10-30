@@ -1,0 +1,218 @@
+---
+import Base from '../layouts/Base.astro';
+import NoteList from '../components/NoteList.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { site } from '../site.config';
+import { getNotes, getProjects, getActivities, getTags, formatDate } from '../lib/content';
+
+const notes = (await getNotes()).slice(0, 5);
+const allProjects = await getProjects();
+// 優先顯示 featured: true 的作品，不足再用最新作品補
+const projects = [
+  ...allProjects.filter((p) => p.data.featured),
+  ...allProjects.filter((p) => !p.data.featured),
+].slice(0, 3);
+const activities = (await getActivities()).slice(0, 3);
+const tagCount = (await getTags()).length;
+const noteCount = (await getNotes()).length;
+const initial = site.author.name.replace(/【.*?】/g, '').trim().slice(0, 1) || '?';
+---
+
+<Base>
+  <section class="hero container">
+    <div class="hero-text">
+      <p class="eyebrow">// hello, world</p>
+      <h1>{site.author.name}</h1>
+      <p class="tagline">{site.author.tagline}</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="/notes/">看學習筆記</a>
+        <a class="btn" href="/about/">關於我</a>
+      </div>
+    </div>
+
+    <div class="hero-panel" aria-hidden="true">
+      <div class="avatar">
+        {site.author.avatar ? <img src={site.author.avatar} alt="" /> : <span>{initial}</span>}
+      </div>
+      <dl class="stats mono">
+        <div><dt>notes</dt><dd>{noteCount}</dd></div>
+        <div><dt>tags</dt><dd>{tagCount}</dd></div>
+        <div><dt>projects</dt><dd>{allProjects.length}</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <div class="container">
+    <section class="section" aria-labelledby="latest-notes">
+      <div class="section-head">
+        <h2 id="latest-notes">最新筆記</h2>
+        <a href="/notes/">全部筆記 →</a>
+      </div>
+      <NoteList notes={notes} />
+    </section>
+
+    <section class="section" aria-labelledby="featured-projects">
+      <div class="section-head">
+        <h2 id="featured-projects">作品</h2>
+        <a href="/projects/">全部作品 →</a>
+      </div>
+      <div class="grid">
+        {projects.map((project) => <ProjectCard project={project} />)}
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="recent-activities">
+      <div class="section-head">
+        <h2 id="recent-activities">近期活動</h2>
+        <a href="/activities/">全部活動 →</a>
+      </div>
+      <ul class="activity-mini">
+        {
+          activities.map((a) => (
+            <li>
+              <time class="mono" datetime={a.data.date.toISOString()}>
+                {formatDate(a.data.date)}
+              </time>
+              <a href={`/activities/#${a.id}`}>{a.data.title}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .hero {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 2rem;
+    padding-block: clamp(3rem, 10vw, 6rem) clamp(2.5rem, 8vw, 4.5rem);
+  }
+
+  h1 {
+    margin: 0.5rem 0 0.75rem;
+    font-size: clamp(2.2rem, 7vw, 3.6rem);
+    letter-spacing: -0.03em;
+  }
+
+  .tagline {
+    margin: 0;
+    max-width: 36rem;
+    font-size: clamp(1.02rem, 2.5vw, 1.18rem);
+    color: var(--muted);
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.75rem;
+  }
+
+  .hero-panel {
+    width: 15rem;
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+
+  .avatar {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    background: var(--metal);
+    border: 1px solid var(--border-strong);
+    overflow: hidden;
+    font-size: 4rem;
+    font-weight: 700;
+    color: var(--text);
+    position: relative;
+  }
+
+  .avatar::after {
+    content: '';
+    position: absolute;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 2px;
+    background: var(--accent);
+  }
+
+  .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    margin: 1rem 0 0;
+    text-align: center;
+  }
+
+  .stats div + div {
+    border-left: 1px solid var(--border);
+  }
+
+  .stats dt {
+    font-size: 0.68rem;
+    color: var(--muted);
+  }
+
+  .stats dd {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+
+  .activity-mini {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .activity-mini li {
+    display: flex;
+    gap: 1.5rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px dashed var(--border);
+  }
+
+  .activity-mini li:last-child {
+    border-bottom: 0;
+  }
+
+  .activity-mini time {
+    flex: none;
+    width: 6rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+    padding-top: 0.15rem;
+  }
+
+  .activity-mini a {
+    color: var(--text);
+  }
+
+  .activity-mini a:hover {
+    color: var(--accent);
+  }
+
+  @media (max-width: 48rem) {
+    .hero {
+      grid-template-columns: 1fr;
+    }
+
+    .hero-panel {
+      display: none;
+    }
+  }
+</style>

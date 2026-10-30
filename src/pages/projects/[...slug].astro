@@ -1,0 +1,78 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import CodeHighlightToggle from '../../components/CodeHighlightToggle.astro';
+import { getProjects, formatDate } from '../../lib/content';
+
+export async function getStaticPaths() {
+  return (await getProjects()).map((project) => ({
+    params: { slug: project.id },
+    props: { project },
+  }));
+}
+
+const { project } = Astro.props;
+const { Content } = await render(project);
+const { title, description, date, tech, cover, coverAlt, demo, repo } = project.data;
+const hasCode = project.body?.includes('```') ?? false;
+---
+
+<Base title={title} description={description}>
+  <article class="container" data-pagefind-body>
+    <header class="page-head">
+      <p class="eyebrow"><a href="/projects/">← 作品</a> · {formatDate(date)}</p>
+      <h1>{title}</h1>
+      <p>{description}</p>
+      <div class="meta" data-pagefind-ignore>
+        {
+          tech.length > 0 && (
+            <ul class="tags">
+              {tech.map((t) => (
+                <li class="tag">{t}</li>
+              ))}
+            </ul>
+          )
+        }
+        <div class="links">
+          {demo && <a class="btn btn-primary" href={demo} rel="noopener">查看成果 ↗</a>}
+          {repo && <a class="btn" href={repo} rel="noopener">原始碼 ↗</a>}
+          {hasCode && <CodeHighlightToggle />}
+        </div>
+      </div>
+    </header>
+
+    {cover && <img class="cover" src={cover} alt={coverAlt ?? ''} width="1280" height="720" />}
+
+    <div class="prose">
+      <Content />
+    </div>
+  </article>
+</Base>
+
+<style>
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1.25rem;
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .cover {
+    width: 100%;
+    max-width: var(--prose-w);
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    margin-bottom: 2.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+</style>

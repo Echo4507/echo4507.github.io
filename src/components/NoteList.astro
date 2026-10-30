@@ -1,0 +1,95 @@
+---
+// 筆記列表：日期｜標題、摘要、標籤
+import type { CollectionEntry } from 'astro:content';
+import { formatDate } from '../lib/content';
+
+interface Props {
+  notes: CollectionEntry<'notes'>[];
+}
+
+const { notes } = Astro.props;
+---
+
+{
+  notes.length === 0 ? (
+    <p class="muted">還沒有筆記。</p>
+  ) : (
+    <ul class="note-list">
+      {notes.map((note) => (
+        <li class="note">
+          <time class="date mono" datetime={note.data.date.toISOString()}>
+            {formatDate(note.data.date)}
+          </time>
+          <div>
+            <h3 class="title">
+              <a href={`/notes/${note.id}/`}>{note.data.title}</a>
+            </h3>
+            {note.data.description && <p class="desc">{note.data.description}</p>}
+            {note.data.tags.length > 0 && (
+              <p class="note-tags mono">{note.data.tags.map((t) => `#${t}`).join('  ')}</p>
+            )}
+          </div>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style>
+  .note-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .note {
+    display: grid;
+    grid-template-columns: 7.5rem 1fr;
+    gap: 0.25rem 1.5rem;
+    padding: 1.1rem 0;
+    border-bottom: 1px dashed var(--border);
+  }
+
+  .note:last-child {
+    border-bottom: 0;
+  }
+
+  .date {
+    font-size: 0.82rem;
+    color: var(--muted);
+    padding-top: 0.2rem;
+  }
+
+  .title {
+    margin: 0;
+    font-size: 1.08rem;
+  }
+
+  .title a {
+    color: var(--text);
+  }
+
+  .title a:hover {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .desc {
+    margin: 0.2rem 0 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  .note-tags {
+    margin: 0.35rem 0 0;
+    font-size: 0.75rem;
+    color: var(--steel);
+    white-space: pre-wrap;
+  }
+
+  @media (max-width: 40rem) {
+    .note {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

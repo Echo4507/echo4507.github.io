@@ -1,0 +1,38 @@
+---
+// 依年份分組顯示筆記
+import type { CollectionEntry } from 'astro:content';
+import NoteList from './NoteList.astro';
+
+interface Props {
+  notes: CollectionEntry<'notes'>[];
+}
+
+const { notes } = Astro.props;
+const years = new Map<number, CollectionEntry<'notes'>[]>();
+for (const note of notes) {
+  const y = note.data.date.getFullYear();
+  years.set(y, [...(years.get(y) ?? []), note]);
+}
+---
+
+{
+  [...years].map(([year, list]) => (
+    <section class="year">
+      <h2 class="year-title mono">{year}</h2>
+      <NoteList notes={list} />
+    </section>
+  ))
+}
+
+<style>
+  .year + .year {
+    margin-top: 2.5rem;
+  }
+
+  .year-title {
+    margin: 0 0 0.25rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+</style>
