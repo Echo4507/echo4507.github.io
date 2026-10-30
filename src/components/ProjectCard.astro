@@ -1,0 +1,103 @@
+---
+// 作品卡片：封面圖、標題、描述、使用技術
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+}
+
+const { project } = Astro.props;
+const { title, description, cover, coverAlt, tech, date } = project.data;
+// 沒有封面圖時，用標題第一個字當代替圖（略過【佔位】這類括號標記）
+const initial = title.replace(/【.*?】/g, '').trim().slice(0, 1);
+---
+
+<article class="card project">
+  <div class="cover">
+    {
+      cover ? (
+        <img src={cover} alt={coverAlt ?? ''} loading="lazy" width="640" height="360" />
+      ) : (
+        <span class="cover-fallback mono" aria-hidden="true">{initial}</span>
+      )
+    }
+  </div>
+  <div class="body">
+    <p class="meta mono">{date.getFullYear()}</p>
+    <h3>
+      <a class="stretched" href={`/projects/${project.id}/`}>{title}</a>
+    </h3>
+    <p class="desc">{description}</p>
+    {
+      tech.length > 0 && (
+        <ul class="tags">
+          {tech.map((t) => (
+            <li class="tag">{t}</li>
+          ))}
+        </ul>
+      )
+    }
+  </div>
+</article>
+
+<style>
+  .cover {
+    aspect-ratio: 16 / 9;
+    background: var(--metal);
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .cover-fallback {
+    display: grid;
+    place-items: center;
+    height: 100%;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--muted);
+  }
+
+  .body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 1rem 1.1rem 1.2rem;
+    flex: 1;
+  }
+
+  .meta {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--accent);
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+
+  h3 a {
+    color: var(--text);
+  }
+
+  h3 a:hover {
+    text-decoration: none;
+  }
+
+  .card:hover h3 a {
+    color: var(--accent);
+  }
+
+  .desc {
+    margin: 0 0 0.4rem;
+    color: var(--muted);
+    font-size: 0.92rem;
+    flex: 1;
+  }
+</style>

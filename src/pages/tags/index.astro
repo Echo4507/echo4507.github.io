@@ -1,0 +1,33 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getTags } from '../../lib/content';
+
+const tags = await getTags();
+---
+
+<Base title="所有標籤">
+  <div class="container">
+    <header class="page-head">
+      <p class="eyebrow">// tags · {tags.length} 個</p>
+      <h1>所有標籤</h1>
+    </header>
+    <ul class="tags big">
+      {
+        tags.map(([tag, count]) => (
+          <li>
+            <a class="tag" href={`/tags/${encodeURIComponent(tag)}/`}>
+              #{tag} <span class="muted">{count}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</Base>
+
+<style>
+  .big .tag {
+    font-size: 0.9rem;
+    padding: 0.3rem 0.8rem;
+  }
+</style>

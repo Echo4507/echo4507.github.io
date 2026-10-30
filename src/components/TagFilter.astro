@@ -1,0 +1,40 @@
+---
+// 筆記頁上方的標籤篩選列
+import { getTags } from '../lib/content';
+
+interface Props {
+  current?: string;
+}
+
+const { current } = Astro.props;
+const tags = await getTags();
+---
+
+<nav class="tag-filter" aria-label="依標籤篩選">
+  <ul class="tags">
+    <li><a class="tag" href="/notes/" aria-current={current ? undefined : 'page'}>全部</a></li>
+    {
+      tags.map(([tag, count]) => (
+        <li>
+          <a
+            class="tag"
+            href={`/tags/${encodeURIComponent(tag)}/`}
+            aria-current={tag === current ? 'page' : undefined}
+          >
+            #{tag} <span class="count">{count}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<style>
+  .tag-filter {
+    margin-bottom: 2rem;
+  }
+
+  .count {
+    opacity: 0.6;
+  }
+</style>

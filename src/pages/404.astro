@@ -1,0 +1,34 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="找不到頁面">
+  <div class="container wrap">
+    <p class="code mono">404</p>
+    <h1>找不到這個頁面</h1>
+    <p class="muted">網址可能打錯了，或這個頁面已經被移除。</p>
+    <p><a class="btn" href="/">← 回首頁</a></p>
+  </div>
+</Base>
+
+<style>
+  .wrap {
+    padding-block: clamp(4rem, 15vw, 8rem);
+  }
+
+  .code {
+    margin: 0;
+    font-size: clamp(4rem, 18vw, 7rem);
+    font-weight: 700;
+    line-height: 1;
+    background: var(--metal);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--border-strong);
+  }
+
+  h1 {
+    margin: 1rem 0 0.5rem;
+  }
+</style>

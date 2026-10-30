@@ -1,0 +1,23 @@
+---
+// 給 src/pages/ 底下的 .md 頁面（例如「關於我」）使用的版面
+import Base from './Base.astro';
+
+interface Props {
+  frontmatter: { title: string; description?: string; eyebrow?: string };
+}
+
+const { title, description, eyebrow } = Astro.props.frontmatter;
+---
+
+<Base title={title} description={description}>
+  <div class="container">
+    <header class="page-head">
+      {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+      <h1>{title}</h1>
+      {description && <p>{description}</p>}
+    </header>
+    <div class="prose">
+      <slot />
+    </div>
+  </div>
+</Base>

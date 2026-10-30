@@ -1,0 +1,66 @@
+---
+// 程式碼高亮開關：切換後套用到全站，並記住你的選擇
+---
+
+<button class="code-toggle mono" type="button" aria-pressed="true" title="切換程式碼高亮">
+  <span class="dot" aria-hidden="true"></span>
+  程式碼高亮：<span class="state">開</span>
+</button>
+
+<script>
+  const root = document.documentElement;
+
+  function sync() {
+    const on = root.dataset.codeHighlight !== 'off';
+    document.querySelectorAll<HTMLButtonElement>('.code-toggle').forEach((btn) => {
+      btn.setAttribute('aria-pressed', String(on));
+      const state = btn.querySelector('.state');
+      if (state) state.textContent = on ? '開' : '關';
+    });
+  }
+
+  sync();
+
+  document.querySelectorAll<HTMLButtonElement>('.code-toggle').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const next = root.dataset.codeHighlight === 'off' ? 'on' : 'off';
+      root.dataset.codeHighlight = next;
+      try {
+        localStorage.setItem('code-highlight', next);
+      } catch {}
+      sync();
+    });
+  });
+</script>
+
+<style>
+  .code-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.78rem;
+    padding: 0.3rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+  }
+
+  .code-toggle:hover {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+
+  .dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: var(--border-strong);
+  }
+
+  .code-toggle[aria-pressed='true'] .dot {
+    background: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+</style>

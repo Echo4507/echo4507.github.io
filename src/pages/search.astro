@@ -1,0 +1,64 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="搜尋">
+  <div class="container">
+    <header class="page-head">
+      <p class="eyebrow">// search</p>
+      <h1>搜尋</h1>
+      <p>搜尋所有筆記、作品與活動紀錄。</p>
+    </header>
+    <div id="search"></div>
+    <p class="muted dev-note" hidden>
+      搜尋索引只在執行 <code>npm run build</code> 後產生。請用 <code>npm run build</code> 再
+      <code>npm run preview</code> 預覽搜尋功能。
+    </p>
+  </div>
+</Base>
+
+<!-- 搜尋功能由 Pagefind 提供：建置時產生索引，全部在瀏覽器端執行 -->
+<script is:inline>
+  (function () {
+    var css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = '/pagefind/pagefind-ui.css';
+    document.head.appendChild(css);
+
+    var s = document.createElement('script');
+    s.src = '/pagefind/pagefind-ui.js';
+    s.onload = function () {
+      new PagefindUI({
+        element: '#search',
+        showSubResults: true,
+        showImages: false,
+        resetStyles: false,
+        autofocus: true,
+      });
+    };
+    s.onerror = function () {
+      document.querySelector('.dev-note').hidden = false;
+    };
+    document.head.appendChild(s);
+  })();
+</script>
+
+<style is:global>
+  /* 讓 Pagefind 的搜尋介面套用本站配色 */
+  #search {
+    --pagefind-ui-scale: 0.9;
+    --pagefind-ui-primary: var(--accent);
+    --pagefind-ui-text: var(--text);
+    --pagefind-ui-background: var(--surface);
+    --pagefind-ui-border: var(--border-strong);
+    --pagefind-ui-tag: var(--surface-2);
+    --pagefind-ui-border-width: 1px;
+    --pagefind-ui-border-radius: 6px;
+    --pagefind-ui-font: var(--font-sans);
+  }
+
+  #search mark {
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+</style>

@@ -1,0 +1,223 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import TagList from '../../components/TagList.astro';
+import CodeHighlightToggle from '../../components/CodeHighlightToggle.astro';
+import { getNotes, formatDate } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const notes = await getNotes();
+  // notes 由新到舊排序：較新的是「下一篇」，較舊的是「上一篇」
+  return notes.map((note, i) => ({
+    params: { slug: note.id },
+    props: { note, newer: notes[i - 1], older: notes[i + 1] },
+  }));
+}
+
+const { note, newer, older } = Astro.props;
+const { Content, headings } = await render(note);
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+const hasCode = note.body?.includes('```') ?? false;
+const { title, description, date, updated, tags } = note.data;
+---
+
+<Base title={title} description={description}>
+  <div class="container layout">
+    <article class="article" data-pagefind-body>
+      <header class="article-head">
+        <p class="eyebrow">
+          <time datetime={date.toISOString()}>{formatDate(date)}</time>
+          {updated && <span> · 更新於 {formatDate(updated)}</span>}
+        </p>
+        <h1>{title}</h1>
+        {description && <p class="lead">{description}</p>}
+        <div class="head-row" data-pagefind-ignore>
+          <TagList tags={tags} />
+          {hasCode && <CodeHighlightToggle />}
+        </div>
+      </header>
+
+      <div class="prose">
+        <Content />
+      </div>
+    </article>
+
+    {
+      toc.length > 1 && (
+        <aside class="toc" aria-label="本文目錄">
+          <p class="toc-title mono">目錄</p>
+          <ul>
+            {toc.map((h) => (
+              <li class={`d${h.depth}`}>
+                <a href={`#${h.slug}`}>{h.text}</a>
+              </li>
+            ))}
+          </ul>
+        </aside>
+      )
+    }
+
+    <nav class="pager" aria-label="其他筆記">
+      {
+        older ? (
+          <a class="pager-link" href={`/notes/${older.id}/`}>
+            <span class="mono">← 上一篇</span>
+            {older.data.title}
+          </a>
+        ) : (
+          <span />
+        )
+      }
+      {
+        newer && (
+          <a class="pager-link next" href={`/notes/${newer.id}/`}>
+            <span class="mono">下一篇 →</span>
+            {newer.data.title}
+          </a>
+        )
+      }
+    </nav>
+  </div>
+</Base>
+
+<style>
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    padding-top: clamp(2rem, 6vw, 3.5rem);
+  }
+
+  .article-head {
+    max-width: var(--prose-w);
+    padding-bottom: 1.5rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  h1 {
+    margin: 0.4rem 0 0.75rem;
+    font-size: clamp(1.8rem, 5vw, 2.5rem);
+  }
+
+  .lead {
+    margin: 0 0 1rem;
+    color: var(--muted);
+    font-size: 1.05rem;
+  }
+
+  .head-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .toc {
+    display: none;
+  }
+
+  .pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    max-width: var(--prose-w);
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .pager-link {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.95rem;
+  }
+
+  .pager-link span {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .pager-link:hover {
+    border-color: var(--accent);
+    text-decoration: none;
+  }
+
+  .next {
+    text-align: right;
+    grid-column: 2;
+  }
+
+  @media (max-width: 40rem) {
+    .pager {
+      grid-template-columns: 1fr;
+    }
+
+    .next {
+      grid-column: auto;
+    }
+  }
+
+  /* 寬螢幕：右側固定顯示目錄 */
+  @media (min-width: 64rem) {
+    .layout {
+      grid-template-columns: minmax(0, var(--prose-w)) 14rem;
+      justify-content: space-between;
+      column-gap: 3rem;
+    }
+
+    .toc {
+      display: block;
+      grid-column: 2;
+      grid-row: 1;
+      position: sticky;
+      top: 5.5rem;
+      align-self: start;
+      max-height: calc(100vh - 7rem);
+      overflow-y: auto;
+      font-size: 0.85rem;
+      border-left: 1px solid var(--border);
+      padding-left: 1rem;
+    }
+
+    .toc-title {
+      margin: 0 0 0.5rem;
+      font-size: 0.75rem;
+      color: var(--accent);
+    }
+
+    .toc ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .toc li {
+      margin: 0.35rem 0;
+      line-height: 1.45;
+    }
+
+    .toc .d3 {
+      padding-left: 0.9rem;
+    }
+
+    .toc a {
+      color: var(--muted);
+    }
+
+    .toc a:hover {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .pager {
+      grid-column: 1;
+    }
+  }
+</style>

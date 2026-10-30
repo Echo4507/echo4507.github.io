@@ -1,0 +1,54 @@
+---
+// 所有頁面共用的外框：<head>、頁首、頁尾
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../site.config';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title, description = site.description } = Astro.props;
+const fullTitle = title ? `${title} · ${site.title}` : site.title;
+const codeHighlightDefault = site.codeHighlight ? 'on' : 'off';
+---
+
+<!doctype html>
+<html lang={site.lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {site.noindex && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#f4f4f3" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0d0e10" media="(prefers-color-scheme: dark)" />
+
+    <!-- 在頁面顯示前先套用深淺色與程式碼高亮設定，避免閃爍 -->
+    <script is:inline define:vars={{ codeHighlightDefault }}>
+      (function () {
+        var root = document.documentElement;
+        var stored = null;
+        var code = null;
+        try {
+          stored = localStorage.getItem('theme');
+          code = localStorage.getItem('code-highlight');
+        } catch (e) {}
+        var dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+        root.dataset.theme = dark ? 'dark' : 'light';
+        root.dataset.codeHighlight = code || codeHighlightDefault;
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳到主要內容</a>
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>
