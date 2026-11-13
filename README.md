@@ -1,6 +1,6 @@
 # echo4507.github.io
 
-我在電腦資訊社的學習網站：學習筆記、作品、活動紀錄。
+我的學習網站：學習筆記、作品、活動紀錄。
 
 - 網址：<https://echo4507.github.io>
 - 技術：[Astro](https://astro.build/)（靜態網站）＋ [Pagefind](https://pagefind.app/)（站內搜尋）
